@@ -1,0 +1,52 @@
+<div class="login-logo">
+  <div class="emblem">🎓</div>
+  <h1 id="loginTitle">Login</h1>
+  <p id="loginSubtitle">Enter your credentials</p>
+</div>
+
+<!-- LOGIN FORM -->
+<div id="loginForm">
+  <div class="form-group">
+    <label id="idLabel">ID</label>
+    <input type="text" id="loginId" placeholder="Enter ID">
+  </div>
+
+  <div class="form-group">
+    <label>Password</label>
+    <input type="password" id="loginPass" placeholder="••••••••">
+  </div>
+
+  <button class="login-btn" onclick="doLogin()">Login →</button>
+
+  <p class="login-hint">
+    Don’t have an account? 
+    <span style="color:#00bcd4;cursor:pointer;" onclick="showSignup()">Sign Up</span>
+  </p>
+</div>
+
+<!-- SIGNUP FORM -->
+<div id="signupForm" style="display:none;">
+  <div class="form-group">
+    <label>Full Name</label>
+    <input type="text" id="signupName" placeholder="Enter name">
+  </div>
+
+  <div class="form-group">
+    <label id="signupIdLabel">ID</label>
+    <input type="text" id="signupId" placeholder="Create ID">
+  </div>
+
+  <div class="form-group">
+    <label>Password</label>
+    <input type="password" id="signupPass" placeholder="Create password">
+  </div>
+
+  <button class="login-btn" onclick="doSignup()">Create Account</button>
+
+  <p class="login-hint">
+    Already have an account? 
+    <span style="color:#00bcd4;cursor:pointer;" onclick="showLogin()">Login</span>
+  </p>
+</div>
+
+<button class="btn-secondary" style="margin-top:10px;width:100%;" onclick="goBack()">⬅ Back</button>
