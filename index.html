@@ -1,52 +1,363 @@
-<div class="login-logo">
-  <div class="emblem">🎓</div>
-  <h1 id="loginTitle">Login</h1>
-  <p id="loginSubtitle">Enter your credentials</p>
-</div>
+<<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UniSphere - LD College Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { font-family: 'Segoe UI', system-ui, sans-serif; }
+    .glass { background: rgba(255,255,255,0.97); backdrop-filter: blur(16px); }
+    .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .card-hover:hover { transform: translateY(-8px); box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.15); }
+    .input-focus:focus { 
+      border-color: #3b82f6; 
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15); 
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-950 via-indigo-950 to-purple-950 min-h-screen text-gray-800">
 
-<!-- LOGIN FORM -->
-<div id="loginForm">
-  <div class="form-group">
-    <label id="idLabel">ID</label>
-    <input type="text" id="loginId" placeholder="Enter ID">
+  <!-- AUTH PAGE -->
+  <div id="authPage" class="min-h-screen flex items-center justify-center p-6">
+    <div class="max-w-lg w-full glass rounded-3xl shadow-2xl overflow-hidden">
+      <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white p-10 text-center">
+        <div class="text-7xl mb-4">🎓</div>
+        <h1 class="text-4xl font-bold">UniSphere</h1>
+        <p class="mt-3 opacity-90">LD College of Engineering Portal</p>
+      </div>
+
+      <div class="p-8">
+        <!-- Role Selection -->
+        <div class="grid grid-cols-3 gap-4 mb-8">
+          <button onclick="selectRole('student')" id="roleStudent" class="role-btn active flex flex-col items-center py-6 bg-white border-2 border-blue-500 rounded-2xl">
+            <i class="fas fa-user-graduate text-4xl text-blue-600 mb-2"></i><span class="font-semibold">Student</span>
+          </button>
+          <button onclick="selectRole('faculty')" id="roleFaculty" class="role-btn flex flex-col items-center py-6 bg-white border-2 border-gray-300 rounded-2xl">
+            <i class="fas fa-chalkboard-teacher text-4xl text-emerald-600 mb-2"></i><span class="font-semibold">Faculty</span>
+          </button>
+          <button onclick="selectRole('admin')" id="roleAdmin" class="role-btn flex flex-col items-center py-6 bg-white border-2 border-gray-300 rounded-2xl">
+            <i class="fas fa-shield-alt text-4xl text-purple-600 mb-2"></i><span class="font-semibold">Admin</span>
+          </button>
+        </div>
+
+        <!-- Login Form -->
+        <div class="space-y-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2" id="idLabel">Student ID</label>
+            <input id="loginId" type="text" placeholder="e.g. 2023BCS045" class="input-focus w-full px-5 py-4 border border-gray-300 rounded-2xl text-lg">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+            <div class="relative">
+              <input id="loginPass" type="password" placeholder="••••••••" class="input-focus w-full px-5 py-4 border border-gray-300 rounded-2xl text-lg pr-12">
+              <button type="button" onclick="togglePassword('loginPass')" class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <i class="fas fa-eye" id="loginEye"></i>
+              </button>
+            </div>
+          </div>
+          <button onclick="doLogin()" id="loginBtn" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-4 rounded-2xl text-lg transition-all active:scale-95">
+            Login →
+          </button>
+        </div>
+
+        <!-- Signup Button -->
+        <div class="mt-10 pt-6 border-t">
+          <p class="text-center text-gray-600 mb-3">New Student?</p>
+          <button onclick="showSignup()" 
+                  class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold py-4 rounded-2xl text-lg flex items-center justify-center gap-2">
+            <i class="fas fa-user-plus"></i> Sign Up as New Student
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="form-group">
-    <label>Password</label>
-    <input type="password" id="loginPass" placeholder="••••••••">
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="hidden min-h-screen bg-gray-50">
+    <nav class="bg-white border-b shadow-sm px-6 lg:px-10 py-5 flex justify-between items-center sticky top-0 z-50">
+      <div class="flex items-center gap-4">
+        <span class="text-4xl">🎓</span>
+        <div>
+          <h1 class="font-bold text-2xl text-gray-900">UniSphere</h1>
+          <p class="text-xs text-gray-500" id="campusName">LD College of Engineering, Ahmedabad</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-6">
+        <div class="text-right">
+          <p id="userNameNav" class="font-semibold text-lg"></p>
+          <p id="userIdNav" class="text-sm text-gray-500"></p>
+          <p id="userRoleNav" class="text-xs text-emerald-600 font-medium"></p>
+        </div>
+        <button onclick="logout()" class="flex items-center gap-2 px-6 py-3 bg-red-50 hover:bg-red-100 text-red-700 rounded-2xl font-medium transition">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto p-6 lg:p-10" id="dashboardContent"></div>
   </div>
 
-  <button class="login-btn" onclick="doLogin()">Login →</button>
+  <!-- Signup Modal -->
+  <div id="signupModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[100]">
+    <div class="bg-white rounded-3xl max-w-md w-full mx-4 p-8">
+      <div class="flex justify-between mb-6">
+        <h2 class="text-2xl font-bold">Create Student Account</h2>
+        <button onclick="hideSignup()" class="text-3xl text-gray-400 hover:text-gray-600">×</button>
+      </div>
 
-  <p class="login-hint">
-    Don’t have an account? 
-    <span style="color:#00bcd4;cursor:pointer;" onclick="showSignup()">Sign Up</span>
-  </p>
-</div>
+      <div class="space-y-5">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+          <input id="signupName" type="text" class="input-focus w-full px-5 py-3 border border-gray-300 rounded-2xl">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
+          <input id="signupId" type="text" placeholder="e.g. 2026BCS001" class="input-focus w-full px-5 py-3 border border-gray-300 rounded-2xl">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">College</label>
+          <select id="signupCollege" class="input-focus w-full px-5 py-3 border border-gray-300 rounded-2xl">
+            <option value="LD College of Engineering" selected>LD College of Engineering</option>
+            <option value="Ahmedabad University">Ahmedabad University</option>
+            <option value="Nirma University">Nirma University</option>
+            <option value="Gujarat Technological University (GTU) Affiliate">GTU Affiliate College</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+          <input id="signupPass" type="password" class="input-focus w-full px-5 py-3 border border-gray-300 rounded-2xl">
+        </div>
 
-<!-- SIGNUP FORM -->
-<div id="signupForm" style="display:none;">
-  <div class="form-group">
-    <label>Full Name</label>
-    <input type="text" id="signupName" placeholder="Enter name">
+        <button onclick="doSignup()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-4 rounded-2xl mt-4">
+          Create Account
+        </button>
+      </div>
+
+      <p onclick="hideSignup()" class="text-center text-sm text-blue-600 mt-6 cursor-pointer hover:underline">
+        Already have account? Login
+      </p>
+    </div>
   </div>
 
-  <div class="form-group">
-    <label id="signupIdLabel">ID</label>
-    <input type="text" id="signupId" placeholder="Create ID">
-  </div>
+  <script>
+    let registeredUsers = [
+      { 
+        id: "2023BCS045", 
+        name: "Dhaval Patel", 
+        password: "123456", 
+        role: "student", 
+        college: "LD College of Engineering", 
+        course: "B.Tech Computer Engineering", 
+        cgpa: 8.74, 
+        attendance: 94 
+      }
+    ];
 
-  <div class="form-group">
-    <label>Password</label>
-    <input type="password" id="signupPass" placeholder="Create password">
-  </div>
+    let currentUser = null;
+    let currentRole = 'student';
 
-  <button class="login-btn" onclick="doSignup()">Create Account</button>
+    const firstYearSubjects = [
+      { name: "Mathematics - I", internal: 28, external: 62, total: 90, grade: "A" },
+      { name: "Physics", internal: 25, external: 58, total: 83, grade: "B+" },
+      { name: "Basic Electrical Engineering (BEE)", internal: 30, external: 65, total: 95, grade: "A+" },
+      { name: "Engineering Graphics & Design (EGD)", internal: 27, external: 60, total: 87, grade: "A" },
+      { name: "Communication Skills", internal: 22, external: 55, total: 77, grade: "B" },
+      { name: "Programming for Problem Solving", internal: 29, external: 61, total: 90, grade: "A+" }
+    ];
 
-  <p class="login-hint">
-    Already have an account? 
-    <span style="color:#00bcd4;cursor:pointer;" onclick="showLogin()">Login</span>
-  </p>
-</div>
+    function selectRole(role) {
+      currentRole = role;
+      document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('active', 'border-blue-500'));
+      document.getElementById(`role${role.charAt(0).toUpperCase() + role.slice(1)}`).classList.add('active', 'border-blue-500');
+      document.getElementById('idLabel').textContent = role === 'student' ? 'Student ID' : (role === 'faculty' ? 'Faculty ID' : 'Admin ID');
+    }
 
-<button class="btn-secondary" style="margin-top:10px;width:100%;" onclick="goBack()">⬅ Back</button>
+    function togglePassword() {
+      const input = document.getElementById('loginPass');
+      const icon = document.getElementById('loginEye');
+      if (input.type === "password") {
+        input.type = "text";
+        icon.classList.replace("fa-eye", "fa-eye-slash");
+      } else {
+        input.type = "password";
+        icon.classList.replace("fa-eye-slash", "fa-eye");
+      }
+    }
+
+    function showSignup() {
+      document.getElementById('signupModal').classList.remove('hidden');
+    }
+
+    function hideSignup() {
+      document.getElementById('signupModal').classList.add('hidden');
+    }
+
+    function doSignup() {
+      const name = document.getElementById('signupName').value.trim();
+      const id = document.getElementById('signupId').value.trim();
+      const college = document.getElementById('signupCollege').value;
+      const pass = document.getElementById('signupPass').value.trim();
+
+      if (!name || !id || !pass) return alert("All fields are required");
+
+      if (registeredUsers.some(u => u.id === id)) return alert("Student ID already exists");
+
+      registeredUsers.push({
+        id: id, name: name, password: pass, role: "student",
+        college: college, course: "B.Tech Computer Engineering",
+        cgpa: 7.9, attendance: 89
+      });
+
+      alert(`✅ Account created!\nID: ${id}\nYou can now login.`);
+      hideSignup();
+    }
+
+    function doLogin() {
+      const id = document.getElementById('loginId').value.trim();
+      const pass = document.getElementById('loginPass').value.trim();
+      const btn = document.getElementById('loginBtn');
+
+      if (!id || !pass) return alert("Please enter ID and Password");
+
+      btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Checking...`;
+      btn.disabled = true;
+
+      setTimeout(() => {
+        const user = registeredUsers.find(u => u.id === id);
+
+        if (!user || user.password !== pass || user.role !== currentRole) {
+          alert("Invalid credentials or wrong role");
+          btn.innerHTML = 'Login →';
+          btn.disabled = false;
+          return;
+        }
+
+        currentUser = user;
+        document.getElementById('authPage').classList.add('hidden');
+        document.getElementById('dashboard').classList.remove('hidden');
+        loadStudentDashboard(user);
+      }, 800);
+    }
+
+    function loadStudentDashboard(user) {
+      document.getElementById('userNameNav').textContent = user.name;
+      document.getElementById('userIdNav').textContent = user.id;
+      document.getElementById('userRoleNav').textContent = "Student";
+      document.getElementById('campusName').textContent = user.college + ", Ahmedabad";
+
+      const content = document.getElementById('dashboardContent');
+
+      content.innerHTML = `
+        <div class="mb-8">
+          <h1 class="text-3xl font-bold">Welcome back, ${user.name.split(' ')[0]} 👋</h1>
+          <p class="text-gray-600">${user.course} • ${user.college}</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+          <!-- Left Column -->
+          <div class="lg:col-span-4 space-y-6">
+            <!-- ID Card -->
+            <div class="bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-3xl p-8 card-hover">
+              <div class="flex justify-between">
+                <div>
+                  <p class="text-blue-100 text-sm">Student ID Card</p>
+                  <h2 class="text-3xl font-bold mt-3">${user.name}</h2>
+                  <p class="text-blue-100">${user.id}</p>
+                </div>
+                <div class="text-6xl">👨‍🎓</div>
+              </div>
+              <button onclick="alert('ID Card downloaded!')" class="mt-8 w-full py-3 bg-white/20 hover:bg-white/30 rounded-2xl text-sm font-medium">
+                Download ID Card
+              </button>
+            </div>
+
+            <!-- Fees -->
+            <div class="bg-white rounded-3xl p-8 card-hover">
+              <h3 class="font-semibold mb-6">Fees Status</h3>
+              <div class="space-y-4">
+                <div class="flex justify-between"><span class="text-gray-600">College Tuition Fee</span><span class="text-emerald-600 font-semibold">₹1,25,000 (Paid)</span></div>
+                <div class="flex justify-between"><span class="text-gray-600">Exam Fees (Spring 2026)</span><span class="text-amber-600 font-semibold">₹4,200 (Due)</span></div>
+              </div>
+            </div>
+
+            <!-- Attendance -->
+            <div class="bg-white rounded-3xl p-8 card-hover text-center">
+              <h3 class="font-semibold mb-2">Attendance</h3>
+              <div class="text-6xl font-bold text-emerald-600">${user.attendance}%</div>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div class="lg:col-span-8 space-y-8">
+            <div class="grid grid-cols-3 gap-6">
+              <div class="bg-white rounded-3xl p-6 text-center card-hover">
+                <p class="text-gray-500">CGPA</p>
+                <p class="text-5xl font-bold text-blue-600">${user.cgpa}</p>
+              </div>
+              <div class="bg-white rounded-3xl p-6 text-center card-hover">
+                <p class="text-gray-500">Semester</p>
+                <p class="text-5xl font-bold text-purple-600">2</p>
+              </div>
+              <div class="bg-white rounded-3xl p-6 text-center card-hover">
+                <p class="text-gray-500">Year</p>
+                <p class="text-5xl font-bold text-emerald-600">2nd</p>
+              </div>
+            </div>
+
+            <!-- Subjects -->
+            <div class="bg-white rounded-3xl p-8 card-hover">
+              <h3 class="text-xl font-semibold mb-6">Current Semester Subjects</h3>
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="border-b">
+                    <th class="text-left py-4">Subject</th>
+                    <th class="text-center py-4">Internal</th>
+                    <th class="text-center py-4">External</th>
+                    <th class="text-center py-4">Total</th>
+                    <th class="text-center py-4">Grade</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${firstYearSubjects.map(s => `
+                    <tr class="border-b hover:bg-gray-50">
+                      <td class="py-4 font-medium">${s.name}</td>
+                      <td class="py-4 text-center">${s.internal}</td>
+                      <td class="py-4 text-center">${s.external}</td>
+                      <td class="py-4 text-center font-semibold">${s.total}</td>
+                      <td class="py-4 text-center"><span class="px-4 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs">${s.grade}</span></td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Degree Details -->
+            <div class="bg-white rounded-3xl p-8 card-hover">
+              <h3 class="text-xl font-semibold mb-6">Degree & Course Details</h3>
+              <div class="grid grid-cols-2 gap-6 text-sm">
+                <div><p class="text-gray-500">Degree</p><p class="font-semibold">B.Tech</p></div>
+                <div><p class="text-gray-500">Branch</p><p class="font-semibold">${user.course}</p></div>
+                <div><p class="text-gray-500">College</p><p class="font-semibold">${user.college}</p></div>
+                <div><p class="text-gray-500">Affiliation</p><p class="font-semibold">GTU</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function logout() {
+      document.getElementById('dashboard').classList.add('hidden');
+      document.getElementById('authPage').classList.remove('hidden');
+      document.getElementById('loginId').value = '';
+      document.getElementById('loginPass').value = '';
+    }
+
+    // Initialize
+    window.onload = () => selectRole('student');
+  </script>
+</body>
+</html>
