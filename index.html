@@ -1,112 +1,466 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UniSphere - LD College Portal</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel="stylesheet">
-  <style>
-    body { font-family: 'Segoe UI', system-ui, sans-serif; }
-    .glass { background: rgba(255,255,255,0.97); backdrop-filter: blur(16px); }
-    .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    .card-hover:hover { transform: translateY(-8px); box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.15); }
-    .input-focus:focus { 
-      border-color: #3b82f6; 
-      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15); 
-    }
-  </style>
-</head>
-<body class="bg-gradient-to-br from-blue-950 via-indigo-950 to-purple-950 min-h-screen text-gray-800">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UniSphere – LD College Portal</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 
-  <!-- AUTH PAGE -->
-  <div id="authPage" class="min-h-screen flex items-center justify-center p-6">
-    <div class="max-w-lg w-full glass rounded-3xl shadow-2xl overflow-hidden">
-      <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white p-10 text-center">
-        <div class="text-7xl mb-4">🎓</div>
-        <h1 class="text-4xl font-bold">UniSphere</h1>
-        <p class="mt-3 opacity-90">LD College of Engineering Portal</p>
+<style>
+  body { font-family: 'DM Sans', sans-serif; background: #0a1628; color: #f1f5f9; min-height: 100vh; margin: 0; }
+  .syne { font-family: 'Syne', sans-serif; }
+  
+  .auth-card {
+    background: linear-gradient(145deg, #0d1b2e, #0a1628);
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 28px;
+    max-width: 480px;
+    width: 100%;
+  }
+  .field {
+    width: 100%; padding: 14px 16px; background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.12); border-radius: 12px;
+    color: #f1f5f9; outline: none;
+  }
+  .field:focus { border-color: #6366f1; background: rgba(255,255,255,0.1); }
+  
+  .btn-primary {
+    background: linear-gradient(135deg, #2563eb, #4338ca);
+    color: white; padding: 14px; border-radius: 13px; font-weight: 600; width: 100%;
+    transition: all 0.2s;
+  }
+  .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
+  .role-card.selected { border-color: #6366f1; background: rgba(99,102,241,0.2); }
+  
+  #toast {
+    position: fixed; top: 20px; right: 20px; padding: 14px 20px; border-radius: 14px;
+    z-index: 9999; opacity: 0; transition: all 0.3s; transform: translateX(100%);
+  }
+  #toast.show { opacity: 1; transform: translateX(0); }
+  
+  /* Logout button - ultra specific */
+  nav button[onclick="doLogout()"] {
+    color: #f87171 !important; background: rgba(248,113,113,0.2) !important;
+    border: 2px solid rgba(248,113,113,0.4) !important; font-weight: 600 !important;
+    padding: 12px 24px !important; border-radius: 12px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+  nav button[onclick="doLogout()"]:hover {
+    background: rgba(239,68,68,0.3) !important; border-color: #ef4444 !important;
+    color: white !important; transform: translateY(-2px) !important; box-shadow: 0 10px 25px rgba(239,68,68,0.3) !important;
+  }
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- AUTH PAGE -->
+<div id="authPage" class="min-h-screen flex items-center justify-center p-4">
+  <div class="auth-card p-8">
+    <div class="text-center mb-8">
+      <div class="text-5xl mb-4">🎓</div>
+      <h1 class="syne text-3xl font-bold">UniSphere</h1>
+      <p class="text-slate-400">LD College of Engineering Portal</p>
+    </div>
+
+    <!-- Role Selector -->
+    <div class="flex gap-3 mb-6">
+      <button onclick="selectRole('student')" id="roleStudent" class="role-card selected flex-1 py-4 rounded-2xl border-2 border-transparent flex flex-col items-center">
+        <i class="fas fa-user-graduate text-2xl mb-1"></i><span class="text-sm">Student</span>
+      </button>
+      <button onclick="selectRole('faculty')" id="roleFaculty" class="role-card flex-1 py-4 rounded-2xl border-2 border-transparent flex flex-col items-center">
+        <i class="fas fa-chalkboard-teacher text-2xl mb-1 text-emerald-400"></i><span class="text-sm">Faculty</span>
+      </button>
+      <button onclick="selectRole('admin')" id="roleAdmin" class="role-card flex-1 py-4 rounded-2xl border-2 border-transparent flex flex-col items-center">
+        <i class="fas fa-shield-alt text-2xl mb-1 text-purple-400"></i><span class="text-sm">Admin</span>
+      </button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex bg-slate-800 rounded-2xl p-1 mb-6">
+      <button onclick="switchTab('login')" id="tabLogin" class="flex-1 py-3 rounded-xl font-medium bg-white/10">Login</button>
+      <button onclick="switchTab('signup')" id="tabSignup" class="flex-1 py-3 rounded-xl font-medium">Sign Up</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="loginForm">
+      <div class="mb-4">
+        <label class="text-xs font-semibold text-slate-400 block mb-2" id="loginIdLabel">Student ID</label>
+        <input id="loginId" class="field" placeholder="e.g. FAC001 or ADM001 or 2023BCS045">
+      </div>
+      <div class="relative mb-6">
+        <label class="text-xs font-semibold text-slate-400 block mb-2">Password</label>
+        <input id="loginPass" type="password" class="field w-full" placeholder="Enter password" onkeydown="if(event.key==='Enter') doLogin()">
+        <button onclick="togglePassword('loginPass','eyeL')" class="absolute right-4 top-10 text-slate-400 hover:text-white">
+          <i id="eyeL" class="fas fa-eye"></i>
+        </button>
+      </div>
+      <button onclick="doLogin()" id="loginBtn" class="btn-primary">Login →</button>
+      <div id="demoHint" class="text-center text-xs mt-4 text-slate-400"></div>
+    </div>
+
+    <!-- SIGNUP FORM -->
+    <div id="signupForm" class="hidden space-y-4">
+      <input id="signupName" class="field" placeholder="Full Name *">
+      <input id="signupId" class="field" placeholder="ID *">
+      <input id="signupEmail" class="field" type="email" placeholder="Email">
+      
+      <!-- NEW: JOIN DATE FIELD -->
+      <div>
+        <label class="text-xs font-semibold text-slate-400 block mb-2">Join Date *</label>
+        <input id="signupJoinDate" type="date" class="field" max="">
+      </div>
+      
+      <div id="signupExtraFields"></div>
+      
+      <input id="signupPass" type="password" class="field" placeholder="Password *">
+      <input id="signupConfirm" type="password" class="field" placeholder="Confirm Password *" onkeydown="if(event.key==='Enter') doSignup()">
+      
+      <button onclick="doSignup()" class="btn-primary">Create Account →</button>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="hidden min-h-screen bg-[#0a1628]">
+  <nav class="bg-[#0f1f3d] p-5 border-b border-white/10">
+    <div class="max-w-6xl mx-auto flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <span class="text-3xl">🎓</span>
+        <div>
+          <h1 class="syne text-2xl font-bold">UniSphere</h1>
+          <p class="text-xs text-slate-400" id="navCollege">LD College of Engineering</p>
+        </div>
+      </div>
+      <button onclick="doLogout()" class="flex items-center gap-2">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </button>
+    </div>
+  </nav>
+
+  <div id="dashContent" class="max-w-6xl mx-auto p-6 min-h-[70vh]"></div>
+</div>
+
+<script>
+// ==================== STATE ====================
+let currentRole = 'student';
+let currentUser = null;
+
+const CLASS_STUDENT_COUNT = { "CE-2A": 68, "CE-3A": 72, "CE-4A": 65, "CE-4B": 70 };
+
+// Format join date
+function formatJoinDate(dateString) {
+  if (!dateString) return 'Not specified';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-IN', { 
+    year: 'numeric', month: 'long', day: 'numeric' 
+  });
+}
+
+// ==================== UI FUNCTIONS ====================
+function selectRole(role) {
+  currentRole = role;
+  ['roleStudent', 'roleFaculty', 'roleAdmin'].forEach(id => {
+    document.getElementById(id).classList.toggle('selected', currentRole === id.replace('role', '').toLowerCase());
+  });
+
+  document.getElementById('loginIdLabel').textContent = 
+    role === 'student' ? 'Student ID' : role === 'faculty' ? 'Faculty ID' : 'Admin ID';
+
+  document.getElementById('demoHint').innerHTML = 
+    role === 'faculty' ? `Demo: <strong>FAC001</strong> / <strong>faculty123</strong>` :
+    role === 'admin' ? `Demo: <strong>ADM001</strong> / <strong>admin123</strong>` :
+    `Demo: <strong>2023BCS045</strong> / <strong>student123</strong>`;
+
+  renderSignupExtraFields();
+  setMaxJoinDate();
+}
+
+function setMaxJoinDate() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('signupJoinDate').max = today;
+  document.getElementById('signupJoinDate').value = today; // Default to today
+}
+
+function renderSignupExtraFields() {
+  const container = document.getElementById('signupExtraFields');
+  if (currentRole === 'faculty') {
+    container.innerHTML = `
+      <input id="signupDept" class="field" value="Computer Engineering" placeholder="Department">
+      <input id="signupDesig" class="field" value="Professor" placeholder="Designation">
+      <input id="signupExperience" type="number" class="field" value="8" placeholder="Experience (years)" min="0">
+      <input id="signupCabin" class="field" value="CS-305" placeholder="Cabin No.">
+      <input id="signupSubjects" class="field" value="Data Structures, Algorithms" placeholder="Subjects (comma separated)">
+      <input id="signupClasses" class="field" value="CE-2A, CE-3A" placeholder="Classes (comma separated)">
+    `;
+  } else if (currentRole === 'admin') {
+    container.innerHTML = `<input id="signupAdminRole" class="field" value="Super Admin" placeholder="Admin Role">`;
+  } else {
+    container.innerHTML = `<input id="signupCourse" class="field" value="B.Tech Computer Engineering" placeholder="Course">`;
+  }
+}
+
+function switchTab(tab) {
+  document.getElementById('loginForm').classList.toggle('hidden', tab !== 'login');
+  document.getElementById('signupForm').classList.toggle('hidden', tab !== 'signup');
+}
+
+function togglePassword(id, iconId) {
+  const input = document.getElementById(id);
+  const icon = document.getElementById(iconId);
+  input.type = input.type === 'password' ? 'text' : 'password';
+  icon.classList.toggle('fa-eye');
+  icon.classList.toggle('fa-eye-slash');
+}
+
+function showToast(msg, type = 'info') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = `show bg-emerald-600/95 backdrop-blur-lg border border-emerald-400/50 shadow-2xl ${type === 'error' ? 'bg-red-600/95 border-red-400/50' : ''}`;
+  setTimeout(() => toast.classList.remove('show'), 4000);
+}
+
+// ==================== SIGNUP WITH JOIN DATE ====================
+function doSignup() {
+  const name = document.getElementById('signupName').value.trim();
+  const id = document.getElementById('signupId').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const joinDate = document.getElementById('signupJoinDate').value;
+  const pass = document.getElementById('signupPass').value;
+  const confirm = document.getElementById('signupConfirm').value;
+
+  // Validation
+  if (!name || !id || !joinDate || !pass) {
+    return showToast('Name, ID, Join Date, and Password are required!', 'error');
+  }
+  if (pass !== confirm) return showToast('Passwords do not match!', 'error');
+  if (pass.length < 6) return showToast('Password must be at least 6 characters!', 'error');
+
+  let users = JSON.parse(localStorage.getItem('unisphere_users') || '[]');
+  if (users.some(u => u.role === currentRole && (u.studentId === id || u.facultyId === id || u.adminId === id))) {
+    return showToast('This ID is already registered!', 'error');
+  }
+
+  const user = { 
+    uid: Date.now().toString(), 
+    name, 
+    email,
+    role: currentRole, 
+    college: 'LD College of Engineering',
+    joinedAt: new Date(joinDate).getTime(), // User-selected join date
+    password: btoa(pass)
+  };
+
+  // Role-specific fields
+  if (currentRole === 'faculty') {
+    user.facultyId = id;
+    user.dept = document.getElementById('signupDept').value || 'Computer Engineering';
+    user.designation = document.getElementById('signupDesig').value || 'Professor';
+    user.experience = parseInt(document.getElementById('signupExperience').value) || 0;
+    user.cabin = document.getElementById('signupCabin').value || 'TBD';
+    user.subjects = document.getElementById('signupSubjects').value.split(',').map(s => s.trim()).filter(Boolean);
+    user.classes = document.getElementById('signupClasses').value.split(',').map(s => s.trim()).filter(Boolean);
+  } else if (currentRole === 'admin') {
+    user.adminId = id;
+    user.adminRole = document.getElementById('signupAdminRole').value || 'Admin';
+  } else {
+    user.studentId = id;
+    user.course = document.getElementById('signupCourse').value || 'B.Tech Computer Engineering';
+  }
+
+  users.push(user);
+  localStorage.setItem('unisphere_users', JSON.stringify(users));
+  
+  showToast(`Welcome ${name}! Account created successfully!`, 'success');
+  switchTab('login');
+  document.getElementById('loginId').value = id;
+}
+
+// ==================== LOGIN ====================
+function doLogin() {
+  const loginId = document.getElementById('loginId').value.trim();
+  const loginPass = document.getElementById('loginPass').value.trim();
+  const loginBtn = document.getElementById('loginBtn');
+
+  if (!loginId || !loginPass) return showToast('Please enter ID and Password', 'error');
+
+  loginBtn.disabled = true;
+  loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Logging in...';
+
+  setTimeout(() => {
+    let userFound = null;
+
+    // Demo accounts with join dates
+    if (currentRole === 'faculty' && loginId.toUpperCase() === 'FAC001' && loginPass === 'faculty123') {
+      userFound = {
+        name: "Dr. Ramesh Sharma", role: "faculty", facultyId: "FAC001",
+        dept: "Computer Engineering", designation: "Professor", experience: 15,
+        cabin: "CS-201", subjects: ["Data Structures", "Algorithms"], classes: ["CE-2A", "CE-3A"],
+        joinedAt: new Date('2023-08-15').getTime()
+      };
+    } else if (currentRole === 'admin' && loginId.toUpperCase() === 'ADM001' && loginPass === 'admin123') {
+      userFound = { name: "Super Admin", role: "admin", adminId: "ADM001", adminRole: "Super Admin", joinedAt: new Date('2022-01-10').getTime() };
+    } else if (currentRole === 'student' && loginId === '2023BCS045' && loginPass === 'student123') {
+      userFound = { name: "Dhaval Patel", role: "student", studentId: "2023BCS045", joinedAt: new Date('2023-07-20').getTime() };
+    } else {
+      const users = JSON.parse(localStorage.getItem('unisphere_users') || '[]');
+      userFound = users.find(u => u.role === currentRole && 
+        (u.studentId === loginId || u.facultyId === loginId || u.adminId === loginId) &&
+        atob(u.password) === loginPass);
+    }
+
+    resetLoginButton();
+    
+    if (userFound) {
+      currentUser = userFound;
+      showDashboard();
+    } else {
+      showToast('Invalid ID or Password!', 'error');
+    }
+  }, 1500);
+}
+
+function resetLoginButton() {
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = false;
+  btn.innerHTML = 'Login →';
+}
+
+function showDashboard() {
+  document.getElementById('authPage').classList.add('hidden');
+  document.getElementById('dashboard').classList.remove('hidden');
+  
+  if (currentUser.role === 'faculty') renderFacultyDashboard();
+  else if (currentUser.role === 'admin') renderAdminDashboard();
+  else renderStudentDashboard();
+}
+
+// ==================== DASHBOARDS (showing join date) ====================
+function renderFacultyDashboard() {
+  document.getElementById('dashContent').innerHTML = `
+    <div class="max-w-5xl mx-auto">
+      <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-12 pb-8 border-b border-white/10">
+        <div>
+          <h1 class="syne text-4xl lg:text-5xl font-bold mb-3">Welcome, ${currentUser.name.split(' ')[0]} 👋</h1>
+          <p class="text-xl text-slate-300">${currentUser.designation} - ${currentUser.dept}</p>
+          <p class="text-sm text-emerald-400 mt-1">Member since ${formatJoinDate(currentUser.joinedAt)}</p>
+        </div>
+        <div class="bg-gradient-to-r from-emerald-500/20 to-blue-500/20 p-6 rounded-3xl border border-emerald-400/30">
+          <div class="flex items-center gap-3">
+            <i class="fas fa-map-marker-alt text-2xl text-emerald-400"></i>
+            <span>Cabin: <strong>${currentUser.cabin}</strong></span>
+          </div>
+        </div>
       </div>
 
-      <div class="p-8">
-        <!-- Role Selection -->
-        <div class="grid grid-cols-3 gap-4 mb-8">
-          <button onclick="selectRole('student')" id="roleStudent" class="role-btn active flex flex-col items-center py-6 bg-white border-2 border-blue-500 rounded-2xl">
-            <i class="fas fa-user-graduate text-4xl text-blue-600 mb-2"></i><span class="font-semibold">Student</span>
-          </button>
-          <button onclick="selectRole('faculty')" id="roleFaculty" class="role-btn flex flex-col items-center py-6 bg-white border-2 border-gray-300 rounded-2xl">
-            <i class="fas fa-chalkboard-teacher text-4xl text-emerald-600 mb-2"></i><span class="font-semibold">Faculty</span>
-          </button>
-          <button onclick="selectRole('admin')" id="roleAdmin" class="role-btn flex flex-col items-center py-6 bg-white border-2 border-gray-300 rounded-2xl">
-            <i class="fas fa-shield-alt text-4xl text-purple-600 mb-2"></i><span class="font-semibold">Admin</span>
-          </button>
-        </div>
-
-        <!-- Login Form -->
-        <div class="space-y-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2" id="idLabel">Student ID</label>
-            <input id="loginId" type="text" placeholder="e.g. 2023BCS045" class="input-focus w-full px-5 py-4 border border-gray-300 rounded-2xl text-lg">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="bg-[#111827]/80 p-8 rounded-3xl border border-white/10 backdrop-blur-sm">
+          <h3 class="syne text-2xl font-bold mb-6">Profile</h3>
+          <div class="space-y-4 text-sm">
+            <div class="flex justify-between"><span>ID:</span><strong>${currentUser.facultyId}</strong></div>
+            <div class="flex justify-between"><span>Department:</span><strong>${currentUser.dept}</strong></div>
+            <div class="flex justify-between"><span>Experience:</span><strong>${currentUser.experience} years</strong></div>
+            <div class="flex justify-between"><span>Joined:</span><strong>${formatJoinDate(currentUser.joinedAt)}</strong></div>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-            <div class="relative">
-              <input id="loginPass" type="password" placeholder="••••••••" class="input-focus w-full px-5 py-4 border border-gray-300 rounded-2xl text-lg pr-12">
-              <button type="button" onclick="togglePassword('loginPass')" class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                <i class="fas fa-eye" id="loginEye"></i>
-              </button>
+        </div>
+        <div class="bg-[#111827]/80 p-8 rounded-3xl border border-white/10 backdrop-blur-sm">
+          <h3 class="syne text-2xl font-bold mb-6">Classes</h3>
+          ${currentUser.classes?.map(cls => `
+            <div class="bg-slate-800/50 p-4 rounded-2xl mb-3 border border-slate-700 hover:border-emerald-500/50 transition-all">
+              <div class="flex justify-between">
+                <span class="font-semibold">${cls}</span>
+                <span class="text-emerald-400">${CLASS_STUDENT_COUNT[cls] || 65} students</span>
+              </div>
             </div>
-          </div>
-          <button onclick="doLogin()" id="loginBtn" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-4 rounded-2xl text-lg transition-all active:scale-95">
-            Login →
-          </button>
-        </div>
-
-        <!-- Signup Button -->
-        <div class="mt-10 pt-6 border-t">
-          <p class="text-center text-gray-600 mb-3">New Student?</p>
-          <button onclick="showSignup()" 
-                  class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold py-4 rounded-2xl text-lg flex items-center justify-center gap-2">
-            <i class="fas fa-user-plus"></i> Sign Up as New Student
-          </button>
+          `).join('') || '<p class="text-slate-400 text-center py-8">No classes assigned</p>'}
         </div>
       </div>
     </div>
-  </div>
+  `;
+}
 
-  <!-- DASHBOARD -->
-  <div id="dashboard" class="hidden min-h-screen bg-gray-50">
-    <nav class="bg-white border-b shadow-sm px-6 lg:px-10 py-5 flex justify-between items-center sticky top-0 z-50">
-      <div class="flex items-center gap-4">
-        <span class="text-4xl">🎓</span>
-        <div>
-          <h1 class="font-bold text-2xl text-gray-900">UniSphere</h1>
-          <p class="text-xs text-gray-500" id="campusName">LD College of Engineering, Ahmedabad</p>
+function renderStudentDashboard() {
+  document.getElementById('dashContent').innerHTML = `
+    <div class="max-w-5xl mx-auto">
+      <h1 class="syne text-4xl font-bold mb-4">Welcome ${currentUser.name}!</h1>
+      <p class="text-2xl text-slate-300 mb-12">ID: ${currentUser.studentId} • Joined: ${formatJoinDate(currentUser.joinedAt)}</p>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="bg-[#111827]/80 p-10 rounded-3xl border border-white/10 text-center">
+          <i class="fas fa-graduation-cap text-6xl text-emerald-400 mb-6"></i>
+          <h3 class="text-2xl font-bold mb-4">B.Tech Computer Engineering</h3>
+          <p class="text-slate-400">CE-2A • 68 students</p>
+        </div>
+        <div class="bg-[#111827]/80 p-8 rounded-3xl border border-white/10">
+          <h3 class="text-2xl font-bold mb-6">Today's Classes</h3>
+          <div class="space-y-4">
+            <div class="p-6 bg-slate-800 rounded-2xl border border-slate-700">
+              <div class="flex justify-between mb-2"><strong>Algorithms</strong><span>2:00 PM</span></div>
+              <p class="text-sm text-slate-400">CS-201 • Dr. Ramesh Sharma</p>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="flex items-center gap-6">
-        <div class="text-right">
-          <p id="userNameNav" class="font-semibold text-lg"></p>
-          <p id="userIdNav" class="text-sm text-gray-500"></p>
-          <p id="userRoleNav" class="text-xs text-emerald-600 font-medium"></p>
+    </div>
+  `;
+}
+
+function renderAdminDashboard() {
+  document.getElementById('dashContent').innerHTML = `
+    <div class="max-w-6xl mx-auto">
+      <h1 class="syne text-5xl font-bold mb-6">Admin Dashboard</h1>
+      <p class="text-2xl mb-2">${currentUser.name} (${currentUser.adminRole})</p>
+      <p class="text-lg text-slate-400">Member since ${formatJoinDate(currentUser.joinedAt)}</p>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+        <div class="bg-gradient-to-b from-purple-500/20 p-8 rounded-3xl border border-purple-500/30 text-center">
+          <div class="text-4xl mb-4">👨‍🎓</div>
+          <h3 class="text-3xl font-bold">1,245</h3>
+          <p>Students</p>
         </div>
-        <button onclick="logout()" class="flex items-center gap-2 px-6 py-3 bg-red-50 hover:bg-red-100 text-red-700 rounded-2xl font-medium transition">
-          <i class="fas fa-sign-out-alt"></i> Logout
-        </button>
+        <div class="bg-gradient-to-b from-emerald-500/20 p-8 rounded-3xl border border-emerald-500/30 text-center">
+          <div class="text-4xl mb-4">👨‍🏫</div>
+          <h3 class="text-3xl font-bold">87</h3>
+          <p>Faculty</p>
+        </div>
+        <div class="bg-gradient-to-b from-orange-500/20 p-8 rounded-3xl border border-orange-500/30 text-center">
+          <div class="text-4xl mb-4">📚</div>
+          <h3 class="text-3xl font-bold">45</h3>
+          <p>Courses</p>
+        </div>
       </div>
-    </nav>
+    </div>
+  `;
+}
 
-    <div class="max-w-7xl mx-auto p-6 lg:p-10" id="dashboardContent"></div>
-  </div>
+// ==================== FIXED LOGOUT ====================
+function doLogout() {
+  if (confirm(`Logout ${currentUser?.name || ''}?`)) {
+    currentUser = null;
+    document.getElementById('dashboard').classList.add('hidden');
+    document.getElementById('authPage').classList.remove('hidden');
+    
+    // Clear forms
+    document.querySelectorAll('.field').forEach(field => field.value = '');
+    document.getElementById('loginPass').type = 'password';
+    document.getElementById('eyeL').className = 'fas fa-eye';
+    
+    selectRole('student');
+    switchTab('login');
+    showToast('Logged out successfully!', 'success');
+  }
+}
 
-  <!-- Signup Modal -->
-  <div id="signupModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[100]">
-    <div class="bg-white rounded-3xl max-w-md w-full mx-4 p-8">
-      <div class="flex justify-between mb-6">
-        <h2 class="text-2xl font-bold">Create Student Account</h2>
-        <button onclick="hideSignup()" class="text-3xl text-gray-400 hover:text-gray-600">×</button>
-      </div>
-
+// Initialize
+selectRole('student');
+setMaxJoinDate();
+</script>
+</body>
+</html>
       <div class="space-y-5">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
